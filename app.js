@@ -43,5 +43,6 @@ let cursorX;
         event.target.style.marginLeft = -200;
         offset = -200;
         document.body.classList.remove('release');
+        document.getElementById('mobile-hint').style.display = 'none';
     }, false);
 });
