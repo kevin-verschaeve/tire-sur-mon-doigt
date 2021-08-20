@@ -11,3 +11,11 @@ img {
     margin-left: -200px;
     cursor: pointer;
 }
+
+@media screen and (max-width: 480px) {
+    img {
+        height: auto;
+        position: absolute;
+        top: 36%;
+    }
+}
