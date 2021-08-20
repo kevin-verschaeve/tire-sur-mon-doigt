@@ -13,6 +13,11 @@ let cursorX;
 
 ['dragover', 'touchmove'].forEach(function (eventName) {
     document.getElementById('doigt').addEventListener(eventName, function(event) {
+        if (offset >= 0) {
+            document.body.classList.add('release');
+            return false;
+        }
+
         previousCursorX = cursorX;
         cursorX = event.clientX || event.touches[0].clientX;
 
@@ -29,8 +34,6 @@ let cursorX;
         if (offset >= 0) {
             fart  = new Audio(`farts/fart${Math.floor(Math.random() * 9 + 1)}.mp3`);
             fart.play();
-            event.target.style.marginLeft = -200;
-            offset = -200;
         }
     }, false);
 });
@@ -39,5 +42,6 @@ let cursorX;
     document.getElementById('doigt').addEventListener(eventName, function(event) {
         event.target.style.marginLeft = -200;
         offset = -200;
+        document.body.classList.remove('release');
     }, false);
 });
