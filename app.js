@@ -7,7 +7,7 @@ let cursorX;
 
 ['dragstart', 'touchstart'].forEach(function (eventName) {
     document.getElementById('doigt').addEventListener(eventName, function(event) {
-        cursorX = event.clientX || event.touches[0].clientX;
+        cursorX = event.pageX || event.clientX || event.touches[0].clientX;
     }, false);
 });
 
@@ -19,7 +19,7 @@ let cursorX;
         }
 
         previousCursorX = cursorX;
-        cursorX = event.clientX || event.touches[0].clientX;
+        cursorX = event.pageX || event.clientX || event.touches[0].clientX;
 
         let newOffset;
         if (cursorX > previousCursorX) {
