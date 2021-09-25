@@ -1,48 +1,40 @@
-const step = 10;
+interact('#doigt')
+  .draggable({
+    inertia: true,
+    modifiers: [
+      interact.modifiers.restrictRect({
+        restriction: 'parent',
+        endOnly: true
+      })
+    ],
+    autoScroll: true,
 
-let fart;
-let offset = -200;
-let previousCursorX = 0;
-let cursorX;
-
-['dragstart', 'touchstart'].forEach(function (eventName) {
-    document.getElementById('doigt').addEventListener(eventName, function(event) {
-        cursorX = event.pageX || event.clientX || event.touches[0].clientX;
-    }, false);
-});
-
-['dragover', 'touchmove'].forEach(function (eventName) {
-    document.getElementById('doigt').addEventListener(eventName, function(event) {
-        if (offset >= 0) {
-            document.body.classList.add('release');
-            return false;
-        }
-
-        previousCursorX = cursorX;
-        cursorX = event.pageX || event.clientX || event.touches[0].clientX;
-
-        let newOffset;
-        if (cursorX > previousCursorX) {
-            newOffset = offset + step;
-        } else {
-            newOffset = offset - step;
-        }
-
-        event.target.style.marginLeft = newOffset;
-        offset = newOffset;
-
-        if (offset >= 0) {
-            fart  = new Audio(`farts/fart${Math.floor(Math.random() * 9 + 1)}.mp3`);
-            fart.play();
-        }
-    }, false);
-});
-
-['dragend', 'touchend'].forEach(function (eventName) {
-    document.getElementById('doigt').addEventListener(eventName, function(event) {
-        event.target.style.marginLeft = -200;
-        offset = -200;
+    listeners: {
+      move: dragMoveListener,
+      end (event) {
+        event.target.style.transform = 'translateX(0)';
+        event.target.setAttribute('data-x', 0);
         document.body.classList.remove('release');
         document.getElementById('mobile-hint').style.display = 'none';
-    }, false);
-});
+
+        const fart  = new Audio(`farts/fart${Math.floor(Math.random() * 9 + 1)}.mp3`);
+        fart.play();
+      }
+    }
+  })
+
+function dragMoveListener (event) {
+  const target = event.target
+  const prevX = (parseFloat(target.getAttribute('data-x')) || 0);
+
+  if (prevX >= 200) {
+    document.body.classList.add('release');
+    return;
+  }
+
+  const x = prevX + event.dx
+  target.style.transform = 'translateX(' + x + 'px)'
+  target.setAttribute('data-x', x)
+}
+
+window.dragMoveListener = dragMoveListener
