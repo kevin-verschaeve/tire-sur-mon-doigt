@@ -19,6 +19,8 @@ interact('#doigt')
 
         const fart  = new Audio(`farts/fart${Math.floor(Math.random() * 9 + 1)}.mp3`);
         fart.play();
+
+        document.dispatchEvent(new Event('release'));
       }
     }
   })
