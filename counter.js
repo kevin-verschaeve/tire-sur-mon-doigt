@@ -17,5 +17,4 @@ const db = getFirestore(app);
 const docRef = doc(db, 'tire-sur-mon-doigt', 'data');
 
 onSnapshot(docRef, (data) => document.getElementById('counter').innerText = data.data().counter);
-
 document.addEventListener('release', () => updateDoc(docRef, {counter: increment(1)}));
