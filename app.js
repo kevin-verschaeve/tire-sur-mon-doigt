@@ -17,7 +17,7 @@ interact('#doigt')
         document.body.classList.remove('release');
         document.getElementById('mobile-hint').style.display = 'none';
 
-        const fart  = new Audio(`farts/fart${Math.floor(Math.random() * 9 + 1)}.mp3`);
+        const fart  = new Audio(`farts/fart${Math.floor(Math.random() * 10 + 1)}.mp3`);
         fart.play();
 
         document.dispatchEvent(new Event('release'));
