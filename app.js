@@ -1,3 +1,8 @@
+if (window.location.toString().startsWith('chrome-extension')) {
+  // need to set the size for the extension, and 800px is the max allowed
+  document.body.style.width = '800px';
+}
+
 interact('#doigt')
   .draggable({
     inertia: true,
