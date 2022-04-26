@@ -5,6 +5,15 @@ if (window.location.toString().startsWith('chrome-extension')) {
   document.body.style.width = '800px';
 }
 
+document.addEventListener('click', function (e) {
+  const backdrop = document.getElementById('mobile-backdrop');
+  if ('none' === backdrop.style.display) {
+    return;
+  }
+
+  backdrop.style.display = 'none';
+});
+
 interact('#doigt')
   .draggable({
     inertia: true,
@@ -22,7 +31,6 @@ interact('#doigt')
         event.target.style.transform = 'translateX(0)';
         event.target.setAttribute('data-x', 0);
         document.body.classList.remove('release');
-        document.getElementById('mobile-hint').style.display = 'none';
 
         const fart  = new Audio(`farts/fart${Math.floor(Math.random() * PROUT_COUNT + 1)}.mp3`);
         fart.play();
