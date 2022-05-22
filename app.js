@@ -1,5 +1,3 @@
-const PROUT_COUNT = 14;
-
 if (window.location.toString().startsWith('chrome-extension')) {
   // need to set the size for the extension, and 800px is the max allowed
   document.body.style.width = '800px';
@@ -31,10 +29,6 @@ interact('#doigt')
         event.target.style.transform = 'translateX(0)';
         event.target.setAttribute('data-x', 0);
         document.body.classList.remove('release');
-
-        const fart  = new Audio(`farts/fart${Math.floor(Math.random() * PROUT_COUNT + 1)}.mp3`);
-        fart.play();
-
         document.dispatchEvent(new Event('release'));
       }
     }
