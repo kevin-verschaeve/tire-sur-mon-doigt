@@ -18,11 +18,26 @@ const db = getFirestore(app);
 const docRef = doc(db, 'tire-sur-mon-doigt', 'data');
 const storage = getStorage(app);
 
+let farts;
+let fart;
+
+const nextFart = () => {
+    const previous = fart;
+    fart = farts.items.sort(() => 0.5 - Math.random())[0]
+    if (fart === previous) {
+        nextFart()
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    farts = await listAll(ref(storage))
+    nextFart()
+}, false);
+
 onSnapshot(docRef, (data) => document.getElementById('counter').innerText = data.data().counter);
 document.addEventListener('release', async () => {
-    const res = await listAll(ref(storage))
-    const file = res.items.sort(() => 0.5 - Math.random())[0]
-    const url = await getDownloadURL(ref(storage, file.fullPath))
+    const url = await getDownloadURL(ref(storage, fart.fullPath))
     new Audio(url).play();
     updateDoc(docRef, {counter: increment(1)})
+    nextFart()
 });
