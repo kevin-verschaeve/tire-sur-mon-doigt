@@ -18,6 +18,7 @@ const db = getFirestore(app);
 const docRef = doc(db, 'tire-sur-mon-doigt', 'data');
 const storage = getStorage(app);
 
+let audio;
 let farts;
 let fart;
 
@@ -30,6 +31,7 @@ const nextFart = () => {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    audio = new Audio();
     farts = await listAll(ref(storage))
     nextFart()
 }, false);
@@ -37,7 +39,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 onSnapshot(docRef, (data) => document.getElementById('counter').innerText = data.data().counter);
 document.addEventListener('release', async () => {
     const url = await getDownloadURL(ref(storage, fart.fullPath))
-    new Audio(url).play();
+    audio.src = url;
+    audio.play();
     updateDoc(docRef, {counter: increment(1)})
     nextFart()
 });
