@@ -21,7 +21,9 @@ interact('#doigt')
         endOnly: true
       })
     ],
-    autoScroll: true,
+    startAxis: 'x',
+    lockAxis: 'x',
+    autoScroll: false,
 
     listeners: {
       move: dragMoveListener,
