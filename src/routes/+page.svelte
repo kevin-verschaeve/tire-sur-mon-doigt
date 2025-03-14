@@ -49,7 +49,7 @@
             position = initialPosition
             currentNode.style.translate = 'none'
             document.body.classList.remove('release');
-            // updateDoc(docRef, {value: increment(1)})
+            updateDoc(docRef, {value: increment(1)})
 
             const url = await getDownloadURL(ref(storage, fart.fullPath))
             audio.src = url;
