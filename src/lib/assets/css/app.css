@@ -22,7 +22,6 @@ h2 {
 }
 
 #doigt {
-    background-image: url('doigt.png');
     background-size: contain;
     background-repeat: no-repeat;
     width: 80vw;

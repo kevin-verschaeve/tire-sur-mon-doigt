@@ -1,5 +1,6 @@
 <script>
     import '$lib/assets/css/app.css'
+    import doigt from '$lib/assets/images/doigt.png'
     import { draggable } from '@neodrag/svelte';
     import { db, storage } from '$lib/firebase.js'
     import { doc, onSnapshot, updateDoc, increment } from 'firebase/firestore';
@@ -41,6 +42,7 @@
 
 <div
     id="doigt"
+    style="background-image: url({doigt});"
     use:draggable={{
         axis: 'x',
         bounds: 'body',
