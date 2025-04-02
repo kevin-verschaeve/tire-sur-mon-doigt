@@ -1,5 +1,4 @@
 <script>
-    import '$lib/assets/css/app.css'
     import doigt from '$lib/assets/images/doigt.png'
     import { draggable } from '@neodrag/svelte';
     import { db, storage } from '$lib/firebase.js'
@@ -44,7 +43,6 @@
     }
 </script>
 
-<h1>Tire sur mon doigt !</h1>
 <h2>On a tiré {counter} fois sur mon doigt !</h2>
 
 <div id="play-again-wrapper">
@@ -79,6 +77,10 @@
         }
     }}
 >
+</div>
+
+<div id="to-box">
+    <a href="/proutbox" class="wide button-fart">&#x27A2; Tous les prouts</a>
 </div>
 
 {#if mobileBackdrop}
