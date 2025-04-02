@@ -13,6 +13,7 @@
     let audio = $state(null);
     let farts = $state([]);
     let fart = $state(null);
+    let lastPlayedFart = $state(null)
 
     const initialPosition = {x: 0, y: 0}
     let position = $state(initialPosition)
@@ -35,10 +36,24 @@
             nextFart()
         }
     }
+
+    const playFart = async (f) => {
+        const url = await getDownloadURL(ref(storage, f.fullPath));
+        audio.src = url;
+        audio.play();
+    }
 </script>
 
 <h1>Tire sur mon doigt !</h1>
 <h2>On a tiré {counter} fois sur mon doigt !</h2>
+
+<div id="play-again-wrapper">
+    {#if lastPlayedFart}
+        <button id="play-again-button" onclick={() => playFart(lastPlayedFart)}>
+            Rejouer le prout
+        </button>
+    {/if}
+</div>
 
 <div
     id="doigt"
@@ -53,11 +68,9 @@
             document.body.classList.remove('release');
             updateDoc(docRef, {value: increment(1)})
 
-            const url = await getDownloadURL(ref(storage, fart.fullPath))
-            audio.src = url;
-            audio.play();
-
-            nextFart()
+            playFart(fart);
+            lastPlayedFart = fart;
+            nextFart();
         },
         onDrag: ({offsetX, currentNode}) => {
             if (currentNode.getBoundingClientRect().width + offsetX >= window.innerWidth - 50) {
