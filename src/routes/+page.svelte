@@ -13,6 +13,7 @@
     let farts = $state([]);
     let fart = $state(null);
     let lastPlayedFart = $state(null)
+    let maxReached = $state(false);
 
     const initialPosition = {x: 0, y: 0}
     let position = $state(initialPosition)
@@ -64,6 +65,11 @@
             position = initialPosition
             currentNode.style.translate = 'none'
             document.body.classList.remove('release');
+
+            if (!maxReached) {
+                return;
+            }
+
             updateDoc(docRef, {value: increment(1)})
 
             playFart(fart);
@@ -71,8 +77,10 @@
             nextFart();
         },
         onDrag: ({offsetX, currentNode}) => {
+            maxReached = false;
             if (currentNode.getBoundingClientRect().width + offsetX >= window.innerWidth - 50) {
                 document.body.classList.add('release');
+                maxReached = true;
             }
         }
     }}
