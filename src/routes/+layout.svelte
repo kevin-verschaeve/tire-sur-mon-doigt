@@ -1,5 +1,17 @@
 <script>
     import '$lib/assets/css/app.css';
+    import { page } from '$app/state';
+
+    let { children } = $props();
+
+    const titles = {
+        fr: 'Tire sur mon doigt !',
+        en: 'Pull my finger!',
+    };
+
+    const lang = $derived(page.params.lang || 'fr');
+    const title = $derived(titles[lang] ?? titles.fr);
+    const homeHref = $derived(lang === 'fr' ? '/' : `/${lang}`);
 </script>
 
 <svelte:head>
@@ -13,7 +25,7 @@
 </svelte:head>
 
 <h1>
-    <a href="/" class="raw">Tire sur mon doigt !</a>
+    <a href={homeHref} class="raw">{title}</a>
 </h1>
 
-<slot></slot>
+{@render children()}
