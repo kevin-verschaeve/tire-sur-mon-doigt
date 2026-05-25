@@ -44,6 +44,17 @@
     }
 </script>
 
+<svelte:head>
+    <title>Tire sur mon doigt !</title>
+    <meta name="description" content="Tire sur le doigt pour déclencher un prout ! Rejoins des milliers de joueurs et compte les pets." />
+    <link rel="canonical" href="https://tire-sur-mon-doigt.fr/" />
+    <meta property="og:title" content="Tire sur mon doigt !" />
+    <meta property="og:description" content="Tire sur le doigt pour déclencher un prout ! Rejoins des milliers de joueurs et compte les pets." />
+    <meta property="og:url" content="https://tire-sur-mon-doigt.fr/" />
+    <meta name="twitter:title" content="Tire sur mon doigt !" />
+    <meta name="twitter:description" content="Tire sur le doigt pour déclencher un prout ! Rejoins des milliers de joueurs et compte les pets." />
+</svelte:head>
+
 <h2>On a tiré {counter} fois sur mon doigt !</h2>
 
 <div id="play-again-wrapper">

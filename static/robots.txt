@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tire-sur-mon-doigt.fr/sitemap.xml
