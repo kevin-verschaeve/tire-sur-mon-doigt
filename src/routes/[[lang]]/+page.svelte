@@ -6,6 +6,35 @@
     import { onMount } from 'svelte';
     import { ref, listAll, getDownloadURL } from 'firebase/storage'
 
+    let { data } = $props();
+
+    const t = {
+        fr: {
+            counter: (n) => `On a tiré ${n} fois sur mon doigt !`,
+            replayButton: 'Rejouer le prout',
+            allFarts: 'Tous les prouts',
+            mobileHint: 'Cliquer pour déverouiller',
+            meta: {
+                title: 'Tire sur mon doigt !',
+                description: 'Tire sur le doigt pour déclencher un prout ! Rejoins des milliers de joueurs et compte les pets.',
+                canonical: 'https://tire-sur-mon-doigt.fr/',
+                url: 'https://tire-sur-mon-doigt.fr/',
+            },
+        },
+        en: {
+            counter: (n) => `My finger has been pulled ${n} times!`,
+            replayButton: 'Play the fart again',
+            allFarts: 'All the farts',
+            mobileHint: 'Click to unlock',
+            meta: {
+                title: 'Pull my finger!',
+                description: 'Pull the finger to trigger a fart! Join thousands of players and count the toots.',
+                canonical: 'https://tire-sur-mon-doigt.fr/en',
+                url: 'https://tire-sur-mon-doigt.fr/en',
+            },
+        },
+    }[data.lang];
+
     let counter = $state(0);
     let mobileBackdrop = $state(true)
 
@@ -45,22 +74,22 @@
 </script>
 
 <svelte:head>
-    <title>Tire sur mon doigt !</title>
-    <meta name="description" content="Tire sur le doigt pour déclencher un prout ! Rejoins des milliers de joueurs et compte les pets." />
-    <link rel="canonical" href="https://tire-sur-mon-doigt.fr/" />
-    <meta property="og:title" content="Tire sur mon doigt !" />
-    <meta property="og:description" content="Tire sur le doigt pour déclencher un prout ! Rejoins des milliers de joueurs et compte les pets." />
-    <meta property="og:url" content="https://tire-sur-mon-doigt.fr/" />
-    <meta name="twitter:title" content="Tire sur mon doigt !" />
-    <meta name="twitter:description" content="Tire sur le doigt pour déclencher un prout ! Rejoins des milliers de joueurs et compte les pets." />
+    <title>{t.meta.title}</title>
+    <meta name="description" content={t.meta.description} />
+    <link rel="canonical" href={t.meta.canonical} />
+    <meta property="og:title" content={t.meta.title} />
+    <meta property="og:description" content={t.meta.description} />
+    <meta property="og:url" content={t.meta.url} />
+    <meta name="twitter:title" content={t.meta.title} />
+    <meta name="twitter:description" content={t.meta.description} />
 </svelte:head>
 
-<h2>On a tiré {counter} fois sur mon doigt !</h2>
+<h2>{t.counter(counter)}</h2>
 
 <div id="play-again-wrapper">
     {#if lastPlayedFart}
         <button id="play-again-button" onclick={() => playFart(lastPlayedFart)}>
-            Rejouer le prout
+            {t.replayButton}
         </button>
     {/if}
 </div>
@@ -99,11 +128,11 @@
 </div>
 
 <div id="to-box">
-    <a href="/proutbox" class="wide button-fart">&#x27A2; Tous les prouts</a>
+    <a href="/{data.lang}/proutbox" class="wide button-fart">&#x27A2; {t.allFarts}</a>
 </div>
 
 {#if mobileBackdrop}
     <div id="mobile-backdrop" onclick={() => mobileBackdrop = false}>
-        <p id="mobile-hint">Cliquer pour déverouiller</p>
+        <p id="mobile-hint">{t.mobileHint}</p>
     </div>
 {/if}
