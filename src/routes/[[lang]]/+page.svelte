@@ -13,7 +13,6 @@
             counter: (n) => `On a tiré ${n} fois sur mon doigt !`,
             replayButton: 'Rejouer le prout',
             allFarts: 'Tous les prouts',
-            mobileHint: 'Cliquer pour déverouiller',
             meta: {
                 title: 'Tire sur mon doigt !',
                 description: 'Tire sur le doigt pour déclencher un prout ! Rejoins des milliers de joueurs et compte les pets.',
@@ -25,7 +24,6 @@
             counter: (n) => `My finger has been pulled ${n} times!`,
             replayButton: 'Play the fart again',
             allFarts: 'All the farts',
-            mobileHint: 'Click to unlock',
             meta: {
                 title: 'Pull my finger!',
                 description: 'Pull the finger to trigger a fart! Join thousands of players and count the toots.',
@@ -36,8 +34,6 @@
     }[data.lang];
 
     let counter = $state(0);
-    let mobileBackdrop = $state(true)
-
     let audio = $state(null);
     let farts = $state([]);
     let fart = $state(null);
@@ -131,8 +127,3 @@
     <a href="/{data.lang}/proutbox" class="wide button-fart">&#x27A2; {t.allFarts}</a>
 </div>
 
-{#if mobileBackdrop}
-    <div id="mobile-backdrop" onclick={() => mobileBackdrop = false}>
-        <p id="mobile-hint">{t.mobileHint}</p>
-    </div>
-{/if}
