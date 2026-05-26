@@ -2,6 +2,8 @@
     import '$lib/assets/css/app.css';
     import { page } from '$app/state';
     import { setContext } from 'svelte';
+    import { onMount } from 'svelte';
+    import { afterNavigate } from '$app/navigation';
 
     let { children } = $props();
 
@@ -19,6 +21,49 @@
 
     let replayFn = $state(null);
     setContext('nav', { setReplay: (fn) => { replayFn = fn; } });
+
+    const bannerText = {
+        fr: 'Ce site utilise des cookies.',
+        en: 'This site uses cookies.',
+    };
+
+    let showBanner = $state(false);
+    let gaLoaded = false;
+
+    function loadGA() {
+        if (gaLoaded) return;
+        gaLoaded = true;
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function() { window.dataLayer.push(arguments); };
+        window.gtag('js', new Date());
+        window.gtag('config', 'G-1K5BQ80QLG');
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=G-1K5BQ80QLG';
+        document.head.appendChild(script);
+    }
+
+    function dismissBanner() {
+        localStorage.setItem('tsmd.cookie_consent', 'accepted');
+        showBanner = false;
+        loadGA();
+    }
+
+    onMount(() => {
+        const stored = localStorage.getItem('tsmd.cookie_consent');
+
+        if (!stored) {
+            showBanner = true;
+        } else if (stored === 'accepted') {
+            loadGA();
+        }
+    });
+
+    afterNavigate(() => {
+        if (window.gtag) {
+            window.gtag('event', 'page_view', { page_path: window.location.pathname });
+        }
+    });
 </script>
 
 <svelte:head>
@@ -54,3 +99,10 @@
 <h1><a href={homeHref} class="raw">{title}</a></h1>
 
 {@render children()}
+
+{#if showBanner}
+    <div id="cookie-banner">
+        <span>{bannerText[lang]}</span>
+        <button id="cookie-close" onclick={dismissBanner} aria-label="Fermer">✕</button>
+    </div>
+{/if}

@@ -136,26 +136,53 @@ a.raw {
     background: #e2e2e2;
     padding: 10px;
     display: none;
-    position: absolute;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
     left: 0;
     right: 0;
     top: 0;
     bottom: 0;
-    opacity: 0.7;
-    z-index: 9999;
+    opacity: 0.95;
+    z-index: 100;
 }
 
 #mobile-hint {
     color: black;
     text-align: center;
-    font-size: 3em;
+    font-size: 2em;
     font-family: Helvetica;
     background: white;
     padding: 40px;
     border-radius: 10%;
-    opacity: 1;
+    margin: 0;
 }
 
+#cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(30, 30, 30, 0.92);
+    color: #ccc;
+    font-size: 0.8em;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    z-index: 200;
+}
+
+#cookie-close {
+    background: none;
+    border: none;
+    color: #ccc;
+    font-size: 1.1em;
+    cursor: pointer;
+    padding: 0 4px;
+    flex-shrink: 0;
+}
 
 @media screen and (max-width: 480px) {
     h1 {

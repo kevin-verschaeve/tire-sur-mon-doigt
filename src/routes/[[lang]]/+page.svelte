@@ -14,6 +14,8 @@
             counter: (n) => `On a tiré ${n} fois sur mon doigt !`,
             replayButton: 'Rejouer',
             mobileHint: 'Cliquer pour déverouiller',
+            replayButton: 'Rejouer le prout',
+            allFarts: 'Tous les prouts',
             meta: {
                 title: 'Tire sur mon doigt !',
                 description: 'Tire sur le doigt pour déclencher un prout ! Rejoins des milliers de joueurs et compte les pets.',
@@ -25,6 +27,8 @@
             counter: (n) => `My finger has been pulled ${n} times!`,
             replayButton: 'Play again',
             mobileHint: 'Click to unlock',
+            replayButton: 'Play the fart again',
+            allFarts: 'All the farts',
             meta: {
                 title: 'Pull my finger!',
                 description: 'Pull the finger to trigger a fart! Join thousands of players and count the toots.',
@@ -35,8 +39,6 @@
     }[data.lang];
 
     let counter = $state(0);
-    let mobileBackdrop = $state(true)
-
     let audio = $state(null);
     let farts = $state([]);
     let fart = $state(null);
@@ -44,6 +46,7 @@
     let maxReached = $state(false);
     let isTriggering = false;
     let isPlaying = $state(false);
+    let mobileBackdrop = $state(true);
 
     const initialPosition = {x: 0, y: 0}
     let position = $state(initialPosition)
