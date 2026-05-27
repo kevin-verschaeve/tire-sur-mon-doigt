@@ -39,6 +39,7 @@ a.raw {
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
+    margin-bottom: 10px;
 }
 
 #play-again-button {
