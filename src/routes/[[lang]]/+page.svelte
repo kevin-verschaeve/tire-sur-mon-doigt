@@ -86,7 +86,8 @@
 
 <h2>{t.counter(counter)}</h2>
 
-<div id="play-again-wrapper">
+<div id="to-box">
+    <a href="/{data.lang}/proutbox" class="wide button-fart">&#x27A2; {t.allFarts}</a>
     {#if lastPlayedFart}
         <button id="play-again-button" onclick={() => playFart(lastPlayedFart)}>
             {t.replayButton}
@@ -125,10 +126,6 @@
         }
     }}
 >
-</div>
-
-<div id="to-box">
-    <a href="/{data.lang}/proutbox" class="wide button-fart">&#x27A2; {t.allFarts}</a>
 </div>
 
 {#if mobileBackdrop}
