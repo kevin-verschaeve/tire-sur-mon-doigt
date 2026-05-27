@@ -5,6 +5,12 @@ body {
     margin: 0;
 }
 
+/** pub **/
+.▶ {
+  position: inherit !important;
+  text-align: center;
+}
+
 body.release {
     background-color: rgb(216, 192, 192);
 }
