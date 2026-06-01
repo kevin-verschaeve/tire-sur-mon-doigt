@@ -52,9 +52,7 @@
 
     const docRef = doc(db, 'data', 'counter');
 
-    const room = page.url.searchParams.get('room')
-               ?? page.url.searchParams.get('broadcast')
-               ?? page.url.searchParams.get('channel');
+    const room = page.url.searchParams.get('room');
 
     onMount(async () => {
         farts = await listAll(ref(storage))
