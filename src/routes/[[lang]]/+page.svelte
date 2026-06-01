@@ -73,10 +73,8 @@
                 }
                 const { soundPath } = snapshot.data();
                 if (!soundPath) return;
-                const url = await getDownloadURL(ref(storage, soundPath));
-                audio.src = url;
-                audio.play();
                 lastPlayedFart = { fullPath: soundPath };
+                playFart(lastPlayedFart);
             });
         }
     });
