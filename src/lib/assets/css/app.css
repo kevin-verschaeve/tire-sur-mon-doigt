@@ -27,6 +27,15 @@ h2 {
     font-family: Helvetica;
 }
 
+#room-badge {
+    text-align: center;
+    font-family: Helvetica;
+    font-size: 0.9em;
+    margin: -10px 0 6px;
+    color: #666;
+    letter-spacing: 0.04em;
+}
+
 a.raw {
     text-decoration: none;
     color: inherit;
