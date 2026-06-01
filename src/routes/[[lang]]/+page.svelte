@@ -2,7 +2,7 @@
     import doigt from '$lib/assets/images/doigt.png'
     import { draggable } from '@neodrag/svelte';
     import { db, storage } from '$lib/firebase.js'
-    import { doc, onSnapshot, updateDoc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
+    import { doc, onSnapshot, updateDoc, increment, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
     import { onMount } from 'svelte';
     import { ref, listAll, getDownloadURL } from 'firebase/storage'
     import { page } from '$app/state';
@@ -46,6 +46,7 @@
     let fart = $state(null);
     let lastPlayedFart = $state(null)
     let maxReached = $state(false);
+    let isTriggering = false;
 
     const initialPosition = {x: 0, y: 0}
     let position = $state(initialPosition)
@@ -64,13 +65,12 @@
 
         if (room) {
             const roomRef = doc(db, 'rooms', room);
-            let initialized = false;
             onSnapshot(roomRef, async (snapshot) => {
-                if (!initialized) {
-                    initialized = true;
+                if (!snapshot.exists()) return;
+                if (isTriggering) {
+                    isTriggering = false;
                     return;
                 }
-                if (!snapshot.exists()) return;
                 const { soundPath } = snapshot.data();
                 if (!soundPath) return;
                 const url = await getDownloadURL(ref(storage, soundPath));
@@ -96,12 +96,13 @@
     }
 
     const triggerFart = async (f) => {
+        playFart(f);
+        lastPlayedFart = f;
         if (room) {
+            isTriggering = true;
             const roomRef = doc(db, 'rooms', room);
             await setDoc(roomRef, { soundPath: f.fullPath, ts: serverTimestamp() });
-        } else {
-            playFart(f);
-            lastPlayedFart = f;
+            deleteDoc(roomRef);
         }
     }
 </script>
