@@ -53,7 +53,7 @@ body.release {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 5px 10px;
+    padding: 5px;
     border-radius: 6px;
     transition: background .15s, color .15s;
 }
@@ -156,6 +156,28 @@ a.raw {
     padding: 40px;
     border-radius: 10%;
     margin: 0;
+}
+
+#sound-hint {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(30, 30, 30, 0.88);
+    color: #fff;
+    font-family: Helvetica, sans-serif;
+    font-size: 0.95em;
+    padding: 10px 20px;
+    border-radius: 999px;
+    white-space: nowrap;
+    z-index: 300;
+    pointer-events: none;
+    animation: sound-hint-in 0.3s ease forwards;
+}
+
+@keyframes sound-hint-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 #cookie-banner {

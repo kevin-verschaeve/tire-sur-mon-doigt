@@ -5,7 +5,7 @@
     import { onMount } from 'svelte';
     import { afterNavigate } from '$app/navigation';
 
-    let { children } = $props();
+    let { children, data } = $props();
 
     const titles = { fr: 'Tire sur mon doigt !', en: 'Pull my finger!' };
     const allFartsLabel = { fr: 'Tous les prouts', en: 'All farts' };
@@ -20,14 +20,29 @@
     const room = $derived(page.url.searchParams.get('room'));
 
     let replayFn = $state(null);
-    setContext('nav', { setReplay: (fn) => { replayFn = fn; } });
+    setContext('nav', {
+        setReplay: (fn) => { replayFn = fn; },
+        onFartPlayed: () => {
+            showSoundHint = false;
+            sessionStorage.setItem('tsmd.sound_hint_seen', '1');
+        },
+    });
 
-    const bannerText = {
-        fr: 'Ce site utilise des cookies.',
-        en: 'This site uses cookies.',
-    };
+    const t = {
+        fr: {
+            home: 'Accueil',
+            bannerText: 'Ce site utilise des cookies.',
+            soundHintText: '🔊 Active le son !',
+        },
+        en: {
+            home: 'Home',
+            bannerText: 'This site uses cookies.',
+            soundHintText: '🔊 Turn on your sound!',
+        },
+    }[data.lang];
 
     let showBanner = $state(false);
+    let showSoundHint = $state(false);
     let gaLoaded = false;
 
     function loadGA() {
@@ -57,6 +72,10 @@
         } else if (stored === 'accepted') {
             loadGA();
         }
+
+        if (!sessionStorage.getItem('tsmd.sound_hint_seen')) {
+            showSoundHint = true;
+        }
     });
 
     afterNavigate(() => {
@@ -79,6 +98,7 @@
 
 <nav id="top-nav">
     <div class="nav-left">
+        <a href="/{data.lang}" class="nav-link">{t.home}</a>
         <a href={proutboxHref} class="nav-link">{label}</a>
         {#if replayFn}
             <button class="nav-link nav-button" onclick={replayFn}>{replay}</button>
@@ -100,9 +120,13 @@
 
 {@render children()}
 
+{#if showSoundHint}
+    <div id="sound-hint" role="status">{t.soundHintText}</div>
+{/if}
+
 {#if showBanner}
     <div id="cookie-banner">
-        <span>{bannerText[lang]}</span>
+        <span>{t.bannerText}</span>
         <button id="cookie-close" onclick={dismissBanner} aria-label="Fermer">✕</button>
     </div>
 {/if}

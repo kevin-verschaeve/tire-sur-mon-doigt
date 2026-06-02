@@ -99,6 +99,7 @@
         const url = await getDownloadURL(ref(storage, f.fullPath));
         audio.src = url;
         audio.play();
+        nav.onFartPlayed();
     }
 
     const triggerFart = async (f) => {

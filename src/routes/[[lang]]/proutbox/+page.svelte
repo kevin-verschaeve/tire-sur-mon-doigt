@@ -1,7 +1,9 @@
 <script>
-    import { onMount } from 'svelte';
+    import { onMount, getContext } from 'svelte';
     import { storage } from '$lib/firebase.js'
     import { ref, listAll, getDownloadURL } from 'firebase/storage'
+
+    const nav = getContext('nav');
 
     let { data } = $props();
     let farts = $state(null);
@@ -16,6 +18,7 @@
         const url = await getDownloadURL(ref(storage, f.fullPath));
         audio.src = url;
         audio.play();
+        nav.onFartPlayed();
     }
 
     const t = {
