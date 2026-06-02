@@ -171,8 +171,25 @@ a.raw {
     border-radius: 999px;
     white-space: nowrap;
     z-index: 300;
-    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     animation: sound-hint-in 0.3s ease forwards;
+}
+
+#sound-hint-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1em;
+    cursor: pointer;
+    padding: 0;
+    opacity: 0.7;
+    line-height: 1;
+}
+
+#sound-hint-close:hover {
+    opacity: 1;
 }
 
 @keyframes sound-hint-in {

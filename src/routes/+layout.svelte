@@ -20,12 +20,15 @@
     const room = $derived(page.url.searchParams.get('room'));
 
     let replayFn = $state(null);
+
+    function dismissSoundHint() {
+        showSoundHint = false;
+        sessionStorage.setItem('tsmd.sound_hint_seen', '1');
+    }
+
     setContext('nav', {
         setReplay: (fn) => { replayFn = fn; },
-        onFartPlayed: () => {
-            showSoundHint = false;
-            sessionStorage.setItem('tsmd.sound_hint_seen', '1');
-        },
+        onFartPlayed: dismissSoundHint,
     });
 
     const t = {
@@ -121,7 +124,10 @@
 {@render children()}
 
 {#if showSoundHint}
-    <div id="sound-hint" role="status">{t.soundHintText}</div>
+    <div id="sound-hint" role="status">
+        <span>{t.soundHintText}</span>
+        <button id="sound-hint-close" onclick={dismissSoundHint} aria-label="Fermer">✕</button>
+    </div>
 {/if}
 
 {#if showBanner}
