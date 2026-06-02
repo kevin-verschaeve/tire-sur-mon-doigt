@@ -83,7 +83,7 @@
 
     afterNavigate(() => {
         if (window.gtag) {
-            window.gtag('event', 'page_view', { page_path: window.location.pathname });
+            window.gtag('event', 'page_view', { page_path: window.location.pathname + window.location.search });
         }
     });
 </script>
