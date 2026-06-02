@@ -7,16 +7,8 @@
 
     let { children, data } = $props();
 
-    const titles = { fr: 'Tire sur mon doigt !', en: 'Pull my finger!' };
-    const allFartsLabel = { fr: 'Tous les prouts', en: 'All farts' };
-    const replayLabel = { fr: 'Rejouer', en: 'Play again' };
-
-    const lang = $derived(page.params.lang || 'fr');
-    const homeHref = $derived(lang === 'fr' ? '/' : `/${lang}`);
-    const proutboxHref = $derived(`/${lang}/proutbox`);
-    const title = $derived(titles[lang] ?? titles.fr);
-    const label = $derived(allFartsLabel[lang] ?? allFartsLabel.fr);
-    const replay = $derived(replayLabel[lang] ?? replayLabel.fr);
+    const homeHref = $derived(data.lang === 'fr' ? '/' : `/${data.lang}`);
+    const proutboxHref = $derived(`/${data.lang}/proutbox`)
     const room = $derived(page.url.searchParams.get('room'));
 
     let replayFn = $state(null);
@@ -34,11 +26,17 @@
     const t = {
         fr: {
             home: 'Accueil',
+            title: 'Tire sur mon doigt !',
+            allFarts: 'Tous les prouts',
+            replay: 'Rejouer',
             bannerText: 'Ce site utilise des cookies.',
             soundHintText: '🔊 Active le son !',
         },
         en: {
             home: 'Home',
+            title: 'Pull my finger!',
+            allFarts: 'All farts',
+            replay: 'Play again',
             bannerText: 'This site uses cookies.',
             soundHintText: '🔊 Turn on your sound!',
         },
@@ -102,9 +100,9 @@
 <nav id="top-nav">
     <div class="nav-left">
         <a href="/{data.lang}" class="nav-link">{t.home}</a>
-        <a href={proutboxHref} class="nav-link">{label}</a>
+        <a href={proutboxHref} class="nav-link">{t.allFarts}</a>
         {#if replayFn}
-            <button class="nav-link nav-button" onclick={replayFn}>{replay}</button>
+            <button class="nav-link nav-button" onclick={replayFn}>{t.replay}</button>
         {/if}
     </div>
     {#if room}
@@ -119,7 +117,7 @@
     {/if}
 </nav>
 
-<h1><a href={homeHref} class="raw">{title}</a></h1>
+<h1><a href={homeHref} class="raw">{t.title}</a></h1>
 
 {@render children()}
 
