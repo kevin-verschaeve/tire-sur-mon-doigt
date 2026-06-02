@@ -47,6 +47,7 @@
     let lastPlayedFart = $state(null)
     let maxReached = $state(false);
     let isTriggering = false;
+    let isPlaying = $state(false);
 
     const initialPosition = {x: 0, y: 0}
     let position = $state(initialPosition)
@@ -58,6 +59,9 @@
     onMount(async () => {
         farts = await listAll(ref(storage))
         audio = new Audio();
+        audio.addEventListener('play', () => isPlaying = true);
+        audio.addEventListener('ended', () => isPlaying = false);
+        audio.addEventListener('pause', () => isPlaying = false);
         nextFart()
         onSnapshot(docRef, (snapshot) => {
             counter = snapshot.data().value
@@ -116,7 +120,7 @@
     <meta name="twitter:description" content={t.meta.description} />
 </svelte:head>
 
-<h2>{t.counter(counter)}</h2>
+<h2>{t.counter(counter)}{#if isPlaying}<span class="sound-bars"><span></span><span></span><span></span></span>{/if}</h2>
 
 {#if room}
     <p id="room-badge">{t.roomBadge(room)}</p>
