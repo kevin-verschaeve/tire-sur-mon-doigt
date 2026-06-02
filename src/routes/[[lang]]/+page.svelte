@@ -3,7 +3,7 @@
     import { draggable } from '@neodrag/svelte';
     import { db, storage } from '$lib/firebase.js'
     import { doc, onSnapshot, updateDoc, increment, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
-    import { onMount } from 'svelte';
+    import { onMount, getContext } from 'svelte';
     import { ref, listAll, getDownloadURL } from 'firebase/storage'
     import { page } from '$app/state';
 
@@ -12,10 +12,8 @@
     const t = {
         fr: {
             counter: (n) => `On a tiré ${n} fois sur mon doigt !`,
-            replayButton: 'Rejouer le prout',
-            allFarts: 'Tous les prouts',
+            replayButton: 'Rejouer',
             mobileHint: 'Cliquer pour déverouiller',
-            roomBadge: (r) => `Salon : ${r}`,
             meta: {
                 title: 'Tire sur mon doigt !',
                 description: 'Tire sur le doigt pour déclencher un prout ! Rejoins des milliers de joueurs et compte les pets.',
@@ -25,10 +23,8 @@
         },
         en: {
             counter: (n) => `My finger has been pulled ${n} times!`,
-            replayButton: 'Play the fart again',
-            allFarts: 'All the farts',
+            replayButton: 'Play again',
             mobileHint: 'Click to unlock',
-            roomBadge: (r) => `Room: ${r}`,
             meta: {
                 title: 'Pull my finger!',
                 description: 'Pull the finger to trigger a fart! Join thousands of players and count the toots.',
@@ -55,6 +51,11 @@
     const docRef = doc(db, 'data', 'counter');
 
     const room = page.url.searchParams.get('room');
+
+    const nav = getContext('nav');
+    $effect(() => {
+        nav.setReplay(lastPlayedFart ? () => triggerFart(lastPlayedFart) : null);
+    });
 
     onMount(async () => {
         farts = await listAll(ref(storage))
@@ -122,19 +123,6 @@
 
 <h2>{t.counter(counter)}{#if isPlaying}<span class="sound-bars"><span></span><span></span><span></span></span>{/if}</h2>
 
-{#if room}
-    <p id="room-badge">{t.roomBadge(room)}</p>
-{/if}
-
-<div id="to-box">
-    <a href="/{data.lang}/proutbox" class="wide button-fart">&#x27A2; {t.allFarts}</a>
-    {#if lastPlayedFart}
-        <button id="play-again-button" onclick={() => triggerFart(lastPlayedFart)}>
-            {t.replayButton}
-        </button>
-    {/if}
-</div>
-
 <div
     id="doigt"
     style="background-image: url({doigt});"
@@ -172,3 +160,5 @@
         <p id="mobile-hint">{t.mobileHint}</p>
     </div>
 {/if}
+
+<div id="container-781deaaa368b7b945bbc2df24b7dee54" class="ads-native-banner ads-banner-width"></div>
