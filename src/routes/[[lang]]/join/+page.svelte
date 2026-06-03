@@ -4,12 +4,14 @@
     const t = {
         fr: {
             title: 'Rejoindre un salon',
+            description: 'Un salon permet de te synchroniser avec tes amis en temps réel. <br> Choisissez le même nom et tout le monde entendra le prout sur son appareil !',
             label: 'Nom du salon',
             placeholder: 'ex: bureau, famille…',
             submit: 'Rejoindre',
         },
         en: {
             title: 'Join a room',
+            description: 'A room lets you sync with your friends in real time. <br> Pick the same name and everyone will hear the toots on their own device!',
             label: 'Room name',
             placeholder: 'e.g. office, family…',
             submit: 'Join',
@@ -31,8 +33,10 @@
                 spellcheck="false"
                 required
             />
+
             <button type="submit" class="button-fart">{t.submit}</button>
         </div>
+        <p class="description">{@html t.description}</p>
     </form>
 </div>
 
@@ -43,6 +47,11 @@
     .content {
         padding: 0 20px;
     }
+
+    .description {
+        color: #555;
+    }
+
     .join-form {
         display: flex;
         flex-direction: column;
