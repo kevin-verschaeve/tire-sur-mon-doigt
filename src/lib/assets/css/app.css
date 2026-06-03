@@ -78,6 +78,15 @@ body.release {
     align-self: center;
 }
 
+.room-visitor-count {
+    background: #e0e0e0;
+    border-radius: 999px;
+    padding: 1px 6px;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: #666;
+}
+
 h1 {
     text-align: center;
     font-family: Helvetica;

@@ -4,6 +4,8 @@
     import { setContext } from 'svelte';
     import { onMount } from 'svelte';
     import { afterNavigate } from '$app/navigation';
+    import { db } from '$lib/firebase.js';
+    import { collection, onSnapshot } from 'firebase/firestore';
 
     let { children, data } = $props();
 
@@ -12,6 +14,45 @@
     const room = $derived(page.url.searchParams.get('room'));
 
     let replayFn = $state(null);
+    let visitorCount = $state(null);
+
+    $effect(() => {
+        if (!room) return;
+
+        const sessionKey = `tsmd.session.${room}`;
+        let sessionId = sessionStorage.getItem(sessionKey);
+        if (!sessionId) {
+            sessionId = crypto.randomUUID();
+            sessionStorage.setItem(sessionKey, sessionId);
+        }
+
+        fetch(`/api/room/${room}/join`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId })
+        });
+
+        const unsubscribe = onSnapshot(collection(db, 'rooms', room, 'visitors'), (snap) => {
+            visitorCount = snap.size;
+        });
+
+        let leaveSent = false;
+        const sendLeave = () => {
+            if (leaveSent) return;
+            leaveSent = true;
+            sessionStorage.removeItem(sessionKey);
+            const blob = new Blob([JSON.stringify({ sessionId })], { type: 'application/json' });
+            navigator.sendBeacon(`/api/room/${room}/leave`, blob);
+        };
+
+        window.addEventListener('beforeunload', sendLeave);
+
+        return () => {
+            unsubscribe();
+            window.removeEventListener('beforeunload', sendLeave);
+            sendLeave();
+        };
+    });
 
     function dismissSoundHint() {
         showSoundHint = false;
@@ -113,6 +154,9 @@
                 <circle cx="5" cy="19" r="1.5" fill="currentColor" stroke="none"/>
             </svg>
             {room}
+            {#if visitorCount !== null}
+                <span class="room-visitor-count">{visitorCount}</span>
+            {/if}
         </span>
     {/if}
 </nav>

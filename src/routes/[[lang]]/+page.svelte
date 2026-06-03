@@ -44,7 +44,7 @@
     let fart = $state(null);
     let lastPlayedFart = $state(null)
     let maxReached = $state(false);
-    let isTriggering = false;
+    const localClientId = crypto.randomUUID();
     let isPlaying = $state(false);
     let mobileBackdrop = $state(true);
 
@@ -72,14 +72,11 @@
         });
 
         if (room) {
-            const roomRef = doc(db, 'rooms', room);
-            onSnapshot(roomRef, async (snapshot) => {
+            const nowPlayingRef = doc(db, 'nowPlaying', room);
+            onSnapshot(nowPlayingRef, async (snapshot) => {
                 if (!snapshot.exists()) return;
-                if (isTriggering) {
-                    isTriggering = false;
-                    return;
-                }
-                const { soundPath } = snapshot.data();
+                const { soundPath, from } = snapshot.data();
+                if (from === localClientId) return;
                 if (!soundPath) return;
                 lastPlayedFart = { fullPath: soundPath };
                 playFart(lastPlayedFart);
@@ -98,7 +95,7 @@
     const playFart = async (f) => {
         const url = await getDownloadURL(ref(storage, f.fullPath));
         audio.src = url;
-        audio.play();
+        audio.play().catch(() => {});
         nav.onFartPlayed();
     }
 
@@ -106,10 +103,9 @@
         playFart(f);
         lastPlayedFart = f;
         if (room) {
-            isTriggering = true;
-            const roomRef = doc(db, 'rooms', room);
-            await setDoc(roomRef, { soundPath: f.fullPath, ts: serverTimestamp() });
-            deleteDoc(roomRef);
+            const nowPlayingRef = doc(db, 'nowPlaying', room);
+            await setDoc(nowPlayingRef, { soundPath: f.fullPath, ts: serverTimestamp(), from: localClientId });
+            deleteDoc(nowPlayingRef);
         }
     }
 </script>
