@@ -142,6 +142,7 @@
     <div class="nav-left">
         <a href="/{data.lang}" class="nav-link">{t.home}</a>
         <a href={proutboxHref} class="nav-link">{t.allFarts}</a>
+        <a href="/{data.lang}/join" class="nav-link">Salon</a>
         {#if replayFn}
             <button class="nav-link nav-button" onclick={replayFn}>{t.replay}</button>
         {/if}

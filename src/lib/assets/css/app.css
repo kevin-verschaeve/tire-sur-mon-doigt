@@ -250,7 +250,7 @@ a.raw {
 }
 
 
-#farts-wrapper {
+.content {
     max-width: 1160px;
     margin: 50px auto;
     display: flex;
