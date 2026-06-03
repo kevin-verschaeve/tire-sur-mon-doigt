@@ -13,7 +13,6 @@
     const proutboxHref = $derived(`/${data.lang}/proutbox`)
     const room = $derived(page.url.searchParams.get('room'));
 
-    let replayFn = $state(null);
     let visitorCount = $state(null);
 
     $effect(() => {
@@ -60,7 +59,6 @@
     }
 
     setContext('nav', {
-        setReplay: (fn) => { replayFn = fn; },
         onFartPlayed: dismissSoundHint,
     });
 
@@ -69,7 +67,6 @@
             home: 'Accueil',
             title: 'Tire sur mon doigt !',
             allFarts: 'Tous les prouts',
-            replay: 'Rejouer',
             bannerText: 'Ce site utilise des cookies.',
             soundHintText: '🔊 Active le son !',
         },
@@ -77,7 +74,6 @@
             home: 'Home',
             title: 'Pull my finger!',
             allFarts: 'All farts',
-            replay: 'Play again',
             bannerText: 'This site uses cookies.',
             soundHintText: '🔊 Turn on your sound!',
         },
@@ -143,9 +139,6 @@
         <a href="/{data.lang}" class="nav-link">{t.home}</a>
         <a href={proutboxHref} class="nav-link">{t.allFarts}</a>
         <a href="/{data.lang}/join" class="nav-link">Salon</a>
-        {#if replayFn}
-            <button class="nav-link nav-button" onclick={replayFn}>{t.replay}</button>
-        {/if}
     </div>
     {#if room}
         <span id="room-badge">

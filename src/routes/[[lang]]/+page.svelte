@@ -56,9 +56,6 @@
     const room = page.url.searchParams.get('room');
 
     const nav = getContext('nav');
-    $effect(() => {
-        nav.setReplay(lastPlayedFart ? () => triggerFart(lastPlayedFart) : null);
-    });
 
     onMount(async () => {
         farts = await listAll(ref(storage))
@@ -121,7 +118,21 @@
     <meta name="twitter:description" content={t.meta.description} />
 </svelte:head>
 
-<h2>{t.counter(counter)}{#if isPlaying}<span class="sound-bars"><span></span><span></span><span></span></span>{/if}</h2>
+<h2>
+    {t.counter(counter)}
+    {#if isPlaying}
+        <span class="sound-bars">
+            <span></span>
+            <span></span>
+            <span></span>
+        </span>
+    {/if}
+    {#if lastPlayedFart}
+        <button class="replay-btn" title="{t.replayButton}" onclick={() => triggerFart(lastPlayedFart)} aria-label={t.replayButton}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        </button>
+    {/if}
+</h2>
 
 <div
     id="doigt"
