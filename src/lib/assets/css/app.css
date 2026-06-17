@@ -5,22 +5,6 @@ body {
     margin: 0;
 }
 
-/** pub **/
-.ads-native-banner {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-}
-.ads-banner-width {
-    max-width: 400px;
-}
-.ads-banner-width > div > div {
-    max-width: 50%;
-}
-.ads-centered {
-    margin: 0 auto;
-}
-
 body.release {
     background-color: rgb(216, 192, 192);
 }

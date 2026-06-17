@@ -54,8 +54,6 @@
     <meta name="twitter:description" content={t.meta.description} />
 </svelte:head>
 
-<div id="container-781deaaa368b7b945bbc2df24b7dee54" class="ads-banner-width ads-centered"></div>
-
 
 <div class="content">
     {#each farts as fart, i}

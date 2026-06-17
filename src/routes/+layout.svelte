@@ -131,7 +131,7 @@
     <meta property="og:image:height" content="512" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:image" content="https://tire-sur-mon-doigt.fr/web-app-manifest-512x512.png" />
-    <script async="async" data-cfasync="false" src="https://pl28018624.effectivecpmnetwork.com/781deaaa368b7b945bbc2df24b7dee54/invoke.js"></script>
+
 </svelte:head>
 
 <nav id="top-nav">

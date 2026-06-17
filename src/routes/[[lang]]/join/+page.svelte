@@ -40,8 +40,6 @@
     </form>
 </div>
 
-<div id="container-781deaaa368b7b945bbc2df24b7dee54" class="ads-native-banner ads-banner-width"></div>
-
 
 <style>
     .content {
