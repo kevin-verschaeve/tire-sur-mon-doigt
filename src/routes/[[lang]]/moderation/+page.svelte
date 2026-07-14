@@ -4,9 +4,10 @@
     import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth'
     import { ref, listAll, getBlob, getDownloadURL, uploadBytes, deleteObject } from 'firebase/storage'
 
-    // Seul ce compte a le droit de modérer. Le compte est créé manuellement
-    // dans la console Firebase (aucune inscription possible depuis le site).
-    const ALLOWED_EMAIL = 'kevin.verschaeve@live.fr';
+    // La restriction réelle est dans les règles Storage (limitées à un email).
+    // Ici on ouvre la modération à tout compte connecté : comme aucune
+    // inscription n'est possible depuis le site, le seul compte existant est
+    // celui créé à la main dans la console Firebase.
 
     let { data } = $props();
 
@@ -24,14 +25,9 @@
         audio = new Audio();
 
         return onAuthStateChanged(auth, (user) => {
-            if (user && user.email === ALLOWED_EMAIL) {
+            if (user) {
                 authState = 'authed';
                 loadSounds();
-            } else if (user) {
-                // Connecté mais pas le bon compte → dehors.
-                signOut(auth);
-                loginError = 'Compte non autorisé.';
-                authState = 'anon';
             } else {
                 authState = 'anon';
             }
