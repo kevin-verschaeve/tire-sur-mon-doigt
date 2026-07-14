@@ -11,6 +11,7 @@
 
     const homeHref = $derived(data.lang === 'fr' ? '/' : `/${data.lang}`);
     const proutboxHref = $derived(`/${data.lang}/proutbox`)
+    const uploadHref = $derived(`/${data.lang}/upload`)
     const room = $derived(page.url.searchParams.get('room'));
 
     let visitorCount = $state(null);
@@ -67,6 +68,7 @@
             home: 'Accueil',
             title: 'Tire sur mon doigt !',
             allFarts: 'Tous les prouts',
+            upload: 'Proposer un prout',
             bannerText: 'Ce site utilise des cookies.',
             soundHintText: '🔊 Active le son !',
         },
@@ -74,6 +76,7 @@
             home: 'Home',
             title: 'Pull my finger!',
             allFarts: 'All farts',
+            upload: 'Submit a fart',
             bannerText: 'This site uses cookies.',
             soundHintText: '🔊 Turn on your sound!',
         },
@@ -138,6 +141,7 @@
     <div class="nav-left">
         <a href="/{data.lang}" class="nav-link">{t.home}</a>
         <a href={proutboxHref} class="nav-link">{t.allFarts}</a>
+        <a href={uploadHref} class="nav-link">{t.upload}</a>
         <a href="/{data.lang}/join" class="nav-link">Salon</a>
     </div>
     {#if room}
