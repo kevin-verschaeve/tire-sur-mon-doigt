@@ -6,7 +6,7 @@
     const nav = getContext('nav');
 
     let { data } = $props();
-    let farts = $state(null);
+    let farts = $state([]);
     let audio = $state(null);
 
     onMount(async () => {
@@ -54,6 +54,7 @@
     <meta name="twitter:description" content={t.meta.description} />
 </svelte:head>
 
+<h2>{farts.length} {t.fart}s</h2>
 
 <div class="content">
     {#each farts as fart, i}

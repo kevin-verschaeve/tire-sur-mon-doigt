@@ -5,12 +5,6 @@
     import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth'
     import { ref, listAll, getBlob, getDownloadURL, uploadBytes, deleteObject } from 'firebase/storage'
 
-    // La restriction réelle est dans les règles Storage (limitées à un email).
-    // Ici on ouvre la modération à tout compte connecté : comme aucune
-    // inscription n'est possible depuis le site, le seul compte existant est
-    // celui créé à la main dans la console Firebase.
-
-    let { data } = $props();
 
     let authState = $state('loading'); // 'loading' | 'anon' | 'authed'
     let email = $state('');
@@ -20,8 +14,6 @@
 
     let sounds = $state(null); // null = chargement, [] = vide
     let audio = $state(null);
-    // Sons dont l'accept/reject est en cours (empêche le double-clic et
-    // grise leurs boutons le temps du traitement).
     let processing = new SvelteSet();
 
     onMount(() => {
@@ -44,7 +36,6 @@
         try {
             await signInWithEmailAndPassword(auth, email.trim(), password);
             password = '';
-            // La suite est gérée par onAuthStateChanged.
         } catch (err) {
             console.error(err);
             loginError = 'Identifiants invalides.';
@@ -72,19 +63,12 @@
         audio.play();
     }
 
-    // Nom affiché sans le préfixe technique (timestamp-id-).
-    function displayName(name) {
-        return name.replace(/^\d+-[0-9a-f]{8}-/, '');
-    }
-
     async function accept(sound) {
         if (processing.has(sound.fullPath)) return;
         processing.add(sound.fullPath);
         try {
             const source = ref(storage, sound.fullPath);
             const blob = await getBlob(source);
-            // Les sons validés vivent à la racine du Storage, aux côtés de
-            // ceux que la Proutbox liste pour la lecture.
             await uploadBytes(ref(storage, sound.name), blob, {
                 contentType: blob.type || 'application/octet-stream',
             });
@@ -100,7 +84,8 @@
 
     async function reject(sound) {
         if (processing.has(sound.fullPath)) return;
-        if (!confirm(`Supprimer définitivement « ${displayName(sound.name)} » ?`)) return;
+        if (!confirm(`Supprimer définitivement « ${sound.name} » ?`)) return;
+
         processing.add(sound.fullPath);
         try {
             await deleteObject(ref(storage, sound.fullPath));
@@ -123,7 +108,7 @@
 
 {#if authState === 'loading'}
     <div class="content">
-        <p class="msg">Chargement…</p>
+        <p class="msg">Chargement...</p>
     </div>
 {:else if authState === 'anon'}
     <div class="content">
@@ -135,7 +120,7 @@
             <input id="mod-password" type="password" autocomplete="current-password" bind:value={password} required />
 
             <button type="submit" class="button-fart" disabled={loggingIn}>
-                {loggingIn ? 'Connexion…' : 'Se connecter'}
+                {loggingIn ? 'Connexion...' : 'Se connecter'}
             </button>
 
             {#if loginError}
@@ -151,13 +136,13 @@
 
     <div class="content mod-list">
         {#if sounds === null}
-            <p class="msg">Chargement…</p>
+            <p class="msg">Aucun sons ou non autorisé.</p>
         {:else if sounds.length === 0}
             <p class="msg">Aucun son en attente de modération. 🎉</p>
         {:else}
             {#each sounds as sound (sound.fullPath)}
                 <div class="mod-item">
-                    <span class="mod-name" title={sound.name}>{displayName(sound.name)}</span>
+                    <span class="mod-name" title={sound.name}>{sound.name}</span>
                     <div class="mod-actions">
                         <button class="mod-btn play" onclick={() => play(sound)} disabled={processing.has(sound.fullPath)}>▶ Écouter</button>
                         <button class="mod-btn accept" onclick={() => accept(sound)} disabled={processing.has(sound.fullPath)}>✓ Accepter</button>

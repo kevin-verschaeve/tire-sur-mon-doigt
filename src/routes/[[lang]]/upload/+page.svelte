@@ -11,11 +11,11 @@
     const t = {
         fr: {
             title: 'Proposer un prout',
-            intro: 'Envoie ton meilleur prout ! Il passera en modération avant d’apparaître dans la Proutbox.',
+            intro: 'Envoie ton meilleur prout !\nLes prouts doivent être des vrais, ils seront vérifiés avant validation.',
             label: 'Fichier audio',
-            submit: 'Envoyer en modération',
-            uploading: 'Envoi…',
-            success: 'Merci ! Ton prout a bien été envoyé en modération. 💨',
+            submit: 'Envoyer',
+            uploading: 'Envoi...',
+            success: 'Merci ! Ton prout a bien été envoyé. 💨',
             error: 'Oups, l’envoi a échoué. Réessaie.',
             noFile: 'Choisis d’abord un fichier audio.',
             notAudio: 'Seuls les fichiers audio sont autorisés.',
@@ -26,10 +26,10 @@
         },
         en: {
             title: 'Submit a fart',
-            intro: 'Send us your best fart! It will be reviewed before showing up in the Fart Box.',
+            intro: 'Send us your best fart! Only send fart sound, it will be checked be approbation.',
             label: 'Audio file',
-            submit: 'Send for review',
-            uploading: 'Uploading…',
+            submit: 'Send',
+            uploading: 'Uploading...',
             success: 'Thanks! Your fart has been sent for review. 💨',
             error: 'Oops, the upload failed. Please try again.',
             noFile: 'Pick an audio file first.',
@@ -40,10 +40,6 @@
             },
         },
     }[data.lang];
-
-    function sanitize(name) {
-        return name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
-    }
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -63,7 +59,9 @@
 
         uploading = true;
         try {
-            const name = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}-${sanitize(file.name)}`;
+            const dot = file.name.lastIndexOf('.');
+            const ext = dot > 0 ? file.name.slice(dot) : '';
+            const name = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}${ext}`;
             await uploadBytes(ref(storage, `moderation/${name}`), file, {
                 contentType: file.type,
             });
@@ -82,7 +80,6 @@
 <svelte:head>
     <title>{t.meta.title}</title>
     <meta name="description" content={t.meta.description} />
-    <meta name="robots" content="noindex" />
 </svelte:head>
 
 <h2>{t.title}</h2>
