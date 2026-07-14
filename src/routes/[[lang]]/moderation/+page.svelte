@@ -1,21 +1,63 @@
 <script>
     import { onMount } from 'svelte';
-    import { enhance } from '$app/forms';
-    import { storage } from '$lib/firebase.js'
+    import { auth, storage } from '$lib/firebase.js'
+    import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth'
     import { ref, listAll, getBlob, getDownloadURL, uploadBytes, deleteObject } from 'firebase/storage'
 
-    let { data, form } = $props();
+    // Seul ce compte a le droit de modérer. Le compte est créé manuellement
+    // dans la console Firebase (aucune inscription possible depuis le site).
+    const ALLOWED_EMAIL = 'kevin.verschaeve@live.fr';
 
-    let sounds = $state(null);   // null = loading, [] = empty
+    let { data } = $props();
+
+    let authState = $state('loading'); // 'loading' | 'anon' | 'authed'
+    let email = $state('');
+    let password = $state('');
+    let loginError = $state(null);
+    let loggingIn = $state(false);
+
+    let sounds = $state(null); // null = chargement, [] = vide
     let audio = $state(null);
-    let busy = $state({});       // fullPath -> boolean
+    let busy = $state({});     // fullPath -> boolean
 
     onMount(() => {
-        if (data.authed) {
-            audio = new Audio();
-            loadSounds();
-        }
+        audio = new Audio();
+
+        return onAuthStateChanged(auth, (user) => {
+            if (user && user.email === ALLOWED_EMAIL) {
+                authState = 'authed';
+                loadSounds();
+            } else if (user) {
+                // Connecté mais pas le bon compte → dehors.
+                signOut(auth);
+                loginError = 'Compte non autorisé.';
+                authState = 'anon';
+            } else {
+                authState = 'anon';
+            }
+        });
     });
+
+    async function login(e) {
+        e.preventDefault();
+        loginError = null;
+        loggingIn = true;
+        try {
+            await signInWithEmailAndPassword(auth, email.trim(), password);
+            password = '';
+            // La suite est gérée par onAuthStateChanged.
+        } catch (err) {
+            console.error(err);
+            loginError = 'Identifiants invalides.';
+        } finally {
+            loggingIn = false;
+        }
+    }
+
+    function logout() {
+        signOut(auth);
+        sounds = null;
+    }
 
     async function loadSounds() {
         sounds = null;
@@ -31,7 +73,7 @@
         audio.play();
     }
 
-    // Displayed filename without the `moderation/` prefix and generated id part.
+    // Nom affiché sans le préfixe technique (timestamp-id-).
     function displayName(name) {
         return name.replace(/^\d+-[0-9a-f]{8}-/, '');
     }
@@ -42,8 +84,8 @@
         try {
             const source = ref(storage, sound.fullPath);
             const blob = await getBlob(source);
-            // Accepted sounds live at the storage root, alongside the ones the
-            // Proutbox lists for playback.
+            // Les sons validés vivent à la racine du Storage, aux côtés de
+            // ceux que la Proutbox liste pour la lecture.
             await uploadBytes(ref(storage, sound.name), blob, {
                 contentType: blob.type || 'application/octet-stream',
             });
@@ -82,23 +124,32 @@
 
 <h2>Modération</h2>
 
-{#if !data.authed}
+{#if authState === 'loading'}
     <div class="content">
-        <form method="POST" action="?/login" use:enhance class="login-form">
+        <p class="msg">Chargement…</p>
+    </div>
+{:else if authState === 'anon'}
+    <div class="content">
+        <form onsubmit={login} class="login-form">
+            <label for="mod-email">Email</label>
+            <input id="mod-email" type="email" autocomplete="username" bind:value={email} required />
+
             <label for="mod-password">Mot de passe</label>
-            <input id="mod-password" name="password" type="password" autocomplete="off" required />
-            <button type="submit" class="button-fart">Entrer</button>
-            {#if form?.error}
-                <p class="msg error">Mot de passe incorrect.</p>
+            <input id="mod-password" type="password" autocomplete="current-password" bind:value={password} required />
+
+            <button type="submit" class="button-fart" disabled={loggingIn}>
+                {loggingIn ? 'Connexion…' : 'Se connecter'}
+            </button>
+
+            {#if loginError}
+                <p class="msg error">{loginError}</p>
             {/if}
         </form>
     </div>
 {:else}
     <div class="mod-toolbar">
         <button class="link-btn" onclick={loadSounds}>↻ Rafraîchir</button>
-        <form method="POST" action="?/logout" use:enhance class="inline-form">
-            <button type="submit" class="link-btn">Se déconnecter</button>
-        </form>
+        <button class="link-btn" onclick={logout}>Se déconnecter</button>
     </div>
 
     <div class="content mod-list">
@@ -143,6 +194,7 @@
         text-transform: uppercase;
     }
 
+    input[type="email"],
     input[type="password"] {
         height: 48px;
         padding: 0 14px;
@@ -163,10 +215,6 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-    }
-
-    .inline-form {
-        margin: 0;
     }
 
     .link-btn {
