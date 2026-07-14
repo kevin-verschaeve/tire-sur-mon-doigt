@@ -18,6 +18,7 @@
             success: 'Merci ! Ton prout a bien été envoyé en modération. 💨',
             error: 'Oups, l’envoi a échoué. Réessaie.',
             noFile: 'Choisis d’abord un fichier audio.',
+            notAudio: 'Seuls les fichiers audio sont autorisés.',
             meta: {
                 title: 'Proposer un prout | Tire sur mon doigt !',
                 description: 'Envoie ton propre son de prout. Il sera modéré avant d’intégrer la collection.',
@@ -32,6 +33,7 @@
             success: 'Thanks! Your fart has been sent for review. 💨',
             error: 'Oops, the upload failed. Please try again.',
             noFile: 'Pick an audio file first.',
+            notAudio: 'Only audio files are allowed.',
             meta: {
                 title: 'Submit a fart | Pull my finger!',
                 description: 'Send your own fart sound. It will be reviewed before joining the collection.',
@@ -53,11 +55,17 @@
             return;
         }
 
+        // On n'autorise que les fichiers audio.
+        if (!file.type || !file.type.startsWith('audio/')) {
+            status = 'notaudio';
+            return;
+        }
+
         uploading = true;
         try {
             const name = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}-${sanitize(file.name)}`;
             await uploadBytes(ref(storage, `moderation/${name}`), file, {
-                contentType: file.type || 'application/octet-stream',
+                contentType: file.type,
             });
             status = 'success';
             files = null;
@@ -102,6 +110,8 @@
             <p class="msg error">{t.error}</p>
         {:else if status === 'nofile'}
             <p class="msg error">{t.noFile}</p>
+        {:else if status === 'notaudio'}
+            <p class="msg error">{t.notAudio}</p>
         {/if}
     </form>
 </div>
