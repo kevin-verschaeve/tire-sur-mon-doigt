@@ -1,5 +1,6 @@
 <script>
     import { onMount } from 'svelte';
+    import { SvelteSet } from 'svelte/reactivity';
     import { auth, storage } from '$lib/firebase.js'
     import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth'
     import { ref, listAll, getBlob, getDownloadURL, uploadBytes, deleteObject } from 'firebase/storage'
@@ -19,7 +20,9 @@
 
     let sounds = $state(null); // null = chargement, [] = vide
     let audio = $state(null);
-    let busy = $state({});     // fullPath -> boolean
+    // Sons dont l'accept/reject est en cours (empêche le double-clic et
+    // grise leurs boutons le temps du traitement).
+    let processing = new SvelteSet();
 
     onMount(() => {
         audio = new Audio();
@@ -75,8 +78,8 @@
     }
 
     async function accept(sound) {
-        if (busy[sound.fullPath]) return;
-        busy = { ...busy, [sound.fullPath]: true };
+        if (processing.has(sound.fullPath)) return;
+        processing.add(sound.fullPath);
         try {
             const source = ref(storage, sound.fullPath);
             const blob = await getBlob(source);
@@ -91,15 +94,14 @@
             console.error(err);
             alert('Erreur lors de la validation du son.');
         } finally {
-            const { [sound.fullPath]: _, ...rest } = busy;
-            busy = rest;
+            processing.delete(sound.fullPath);
         }
     }
 
     async function reject(sound) {
-        if (busy[sound.fullPath]) return;
+        if (processing.has(sound.fullPath)) return;
         if (!confirm(`Supprimer définitivement « ${displayName(sound.name)} » ?`)) return;
-        busy = { ...busy, [sound.fullPath]: true };
+        processing.add(sound.fullPath);
         try {
             await deleteObject(ref(storage, sound.fullPath));
             sounds = sounds.filter((s) => s.fullPath !== sound.fullPath);
@@ -107,8 +109,7 @@
             console.error(err);
             alert('Erreur lors de la suppression du son.');
         } finally {
-            const { [sound.fullPath]: _, ...rest } = busy;
-            busy = rest;
+            processing.delete(sound.fullPath);
         }
     }
 </script>
@@ -158,9 +159,9 @@
                 <div class="mod-item">
                     <span class="mod-name" title={sound.name}>{displayName(sound.name)}</span>
                     <div class="mod-actions">
-                        <button class="mod-btn play" onclick={() => play(sound)} disabled={busy[sound.fullPath]}>▶ Écouter</button>
-                        <button class="mod-btn accept" onclick={() => accept(sound)} disabled={busy[sound.fullPath]}>✓ Accepter</button>
-                        <button class="mod-btn reject" onclick={() => reject(sound)} disabled={busy[sound.fullPath]}>✕ Rejeter</button>
+                        <button class="mod-btn play" onclick={() => play(sound)} disabled={processing.has(sound.fullPath)}>▶ Écouter</button>
+                        <button class="mod-btn accept" onclick={() => accept(sound)} disabled={processing.has(sound.fullPath)}>✓ Accepter</button>
+                        <button class="mod-btn reject" onclick={() => reject(sound)} disabled={processing.has(sound.fullPath)}>✕ Rejeter</button>
                     </div>
                 </div>
             {/each}
