@@ -9,8 +9,11 @@
 
     let { children, data } = $props();
 
-    const homeHref = $derived(data.lang === 'fr' ? '/' : `/${data.lang}`);
-    const proutboxHref = $derived(`/${data.lang}/proutbox`)
+    const langHref = (path) => (data.lang === 'fr' ? `/${path}` : `/${data.lang}/${path}`);
+    const homeHref = $derived(langHref(''));
+    const proutboxHref = $derived(langHref('proutbox'));
+    const uploadHref = $derived(langHref('upload'));
+    const joinHref = $derived(langHref('join'));
     const room = $derived(page.url.searchParams.get('room'));
 
     let visitorCount = $state(null);
@@ -67,6 +70,8 @@
             home: 'Accueil',
             title: 'Tire sur mon doigt !',
             allFarts: 'Tous les prouts',
+            upload: 'Ajouter',
+            room: 'Salon',
             bannerText: 'Ce site utilise des cookies.',
             soundHintText: '🔊 Active le son !',
         },
@@ -74,6 +79,8 @@
             home: 'Home',
             title: 'Pull my finger!',
             allFarts: 'All farts',
+            upload: 'Submit',
+            room: 'Room',
             bannerText: 'This site uses cookies.',
             soundHintText: '🔊 Turn on your sound!',
         },
@@ -136,9 +143,10 @@
 
 <nav id="top-nav">
     <div class="nav-left">
-        <a href="/{data.lang}" class="nav-link">{t.home}</a>
+        <a href={homeHref} class="nav-link">{t.home}</a>
         <a href={proutboxHref} class="nav-link">{t.allFarts}</a>
-        <a href="/{data.lang}/join" class="nav-link">Salon</a>
+        <a href={joinHref} class="nav-link">{t.room}</a>
+        <a href={uploadHref} class="nav-link">{t.upload}</a>
     </div>
     {#if room}
         <span id="room-badge">
@@ -160,7 +168,7 @@
 {@render children()}
 
 {#if showSoundHint}
-    <div id="sound-hint" role="status">
+    <div id="sound-hint" role="status" onclick={dismissSoundHint}>
         <span>{t.soundHintText}</span>
         <button id="sound-hint-close" onclick={dismissSoundHint} aria-label="Fermer">✕</button>
     </div>
