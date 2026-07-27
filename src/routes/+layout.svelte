@@ -4,8 +4,7 @@
     import { setContext } from 'svelte';
     import { onMount } from 'svelte';
     import { afterNavigate } from '$app/navigation';
-    import { db } from '$lib/firebase.js';
-    import { collection, onSnapshot } from 'firebase/firestore';
+    import { joinRoom } from '$lib/presence.js';
 
     let { children, data } = $props();
 
@@ -21,39 +20,9 @@
     $effect(() => {
         if (!room) return;
 
-        const sessionKey = `tsmd.session.${room}`;
-        let sessionId = sessionStorage.getItem(sessionKey);
-        if (!sessionId) {
-            sessionId = crypto.randomUUID();
-            sessionStorage.setItem(sessionKey, sessionId);
-        }
-
-        fetch(`/api/room/${room}/join`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionId })
+        return joinRoom(room, (count) => {
+            visitorCount = count;
         });
-
-        const unsubscribe = onSnapshot(collection(db, 'rooms', room, 'visitors'), (snap) => {
-            visitorCount = snap.size;
-        });
-
-        let leaveSent = false;
-        const sendLeave = () => {
-            if (leaveSent) return;
-            leaveSent = true;
-            sessionStorage.removeItem(sessionKey);
-            const blob = new Blob([JSON.stringify({ sessionId })], { type: 'application/json' });
-            navigator.sendBeacon(`/api/room/${room}/leave`, blob);
-        };
-
-        window.addEventListener('beforeunload', sendLeave);
-
-        return () => {
-            unsubscribe();
-            window.removeEventListener('beforeunload', sendLeave);
-            sendLeave();
-        };
     });
 
     function dismissSoundHint() {

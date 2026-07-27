@@ -4,18 +4,18 @@ import { doc, deleteDoc } from 'firebase/firestore';
 export async function POST({ params, request }) {
     const { id } = params;
 
-    let sessionId;
+    let deviceId;
     try {
-        ({ sessionId } = await request.json());
+        ({ deviceId } = await request.json());
     } catch {
         return new Response('Invalid body', { status: 400 });
     }
 
-    if (!sessionId || typeof sessionId !== 'string' || sessionId.length > 64) {
-        return new Response('Invalid sessionId', { status: 400 });
+    if (!deviceId || typeof deviceId !== 'string' || deviceId.length > 64) {
+        return new Response('Invalid deviceId', { status: 400 });
     }
 
-    await deleteDoc(doc(db, 'rooms', id, 'visitors', sessionId));
+    await deleteDoc(doc(db, 'rooms', id, 'visitors', deviceId));
 
     return new Response(null, { status: 204 });
 }
