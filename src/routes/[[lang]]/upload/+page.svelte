@@ -53,6 +53,7 @@
             recording: 'Enregistrement en cours...',
             listen: 'Réécoute ton prout avant de l’envoyer :',
             again: 'Recommencer',
+            discard: 'Supprimer',
             micError: 'Impossible d’accéder au micro. Vérifie les autorisations.',
             trimTitle: 'Rogne ton prout pour couper les blancs :',
             trimHint: 'Fais glisser les poignées pour garder uniquement le son.',
@@ -81,6 +82,7 @@
             recording: 'Recording...',
             listen: 'Listen to your fart before sending it:',
             again: 'Record again',
+            discard: 'Delete',
             micError: 'Could not access the microphone. Check your permissions.',
             trimTitle: 'Trim your fart to cut the silence:',
             trimHint: 'Drag the handles to keep only the sound.',
@@ -119,6 +121,12 @@
         audioBuffer = null;
         trimStart = 0;
         trimEnd = 0;
+    }
+
+    // Jette l'enregistrement et revient à l'état initial (choix de fichier).
+    function discardRecording() {
+        clearRecording();
+        status = null;
     }
 
     function formatTime(seconds) {
@@ -607,14 +615,24 @@
                     <audio src={recordedUrl} controls></audio>
                 {/if}
 
-                <button
-                    type="button"
-                    class="link-button"
-                    onclick={startRecording}
-                    disabled={uploading}
-                >
-                    {t.again}
-                </button>
+                <div class="record-actions">
+                    <button
+                        type="button"
+                        class="link-button"
+                        onclick={startRecording}
+                        disabled={uploading}
+                    >
+                        {t.again}
+                    </button>
+                    <button
+                        type="button"
+                        class="link-button link-danger"
+                        onclick={discardRecording}
+                        disabled={uploading}
+                    >
+                        {t.discard}
+                    </button>
+                </div>
             {/if}
         {/if}
 
@@ -864,6 +882,15 @@
     .trim-actions {
         display: flex;
         gap: 16px;
+    }
+
+    .record-actions {
+        display: flex;
+        gap: 16px;
+    }
+
+    .link-danger {
+        color: #cf222e;
     }
 
     .link-button {
