@@ -1,25 +1,21 @@
 <script>
-    import { storage } from '$lib/firebase.js'
-    import { ref, uploadBytes } from 'firebase/storage'
+    import { storage } from '$lib/firebase.js';
+    import { ref, uploadBytes } from 'firebase/storage';
+    import { createRecorder } from '$lib/audio/recorder.svelte.js';
+    import { extensionForFile } from '$lib/audio/format.js';
+    import AudioTrimmer from '$lib/components/AudioTrimmer.svelte';
 
     let { data } = $props();
 
     let files = $state(null);
     let uploading = $state(false);
-    let status = $state(null); // 'success' | 'error' | null
-
-    let recording = $state(false);
-    let recordedBlob = $state(null);
-    let recordedUrl = $state(null);
-    let recordSeconds = $state(0);
-
-    let recorder = null;
-    let chunks = [];
-    let timer = null;
+    let status = $state(null); // 'success' | 'error' | 'nofile' | 'notaudio' | null
     let fileInput = $state(null);
+    let trimmer = $state(null);
 
     // Durée max d'un prout, on ne veut pas d'un album complet.
     const MAX_SECONDS = 30;
+    const recorder = createRecorder({ maxSeconds: MAX_SECONDS });
 
     const supportsRecording =
         typeof navigator !== 'undefined' &&
@@ -43,7 +39,14 @@
             recording: 'Enregistrement en cours...',
             listen: 'Réécoute ton prout avant de l’envoyer :',
             again: 'Recommencer',
+            discard: 'Supprimer',
             micError: 'Impossible d’accéder au micro. Vérifie les autorisations.',
+            trimTitle: 'Rogne ton prout pour couper les blancs :',
+            trimHint: 'Fais glisser les poignées pour garder uniquement le son.',
+            playSelection: 'Écouter la sélection',
+            stopSelection: 'Arrêter',
+            resetTrim: 'Tout sélectionner',
+            selectionLabel: 'Sélection',
             meta: {
                 title: 'Proposer un prout | Tire sur mon doigt !',
                 description: 'Envoie ton propre son de prout. Il sera modéré avant d’intégrer la collection.',
@@ -65,7 +68,14 @@
             recording: 'Recording...',
             listen: 'Listen to your fart before sending it:',
             again: 'Record again',
+            discard: 'Delete',
             micError: 'Could not access the microphone. Check your permissions.',
+            trimTitle: 'Trim your fart to cut the silence:',
+            trimHint: 'Drag the handles to keep only the sound.',
+            playSelection: 'Play selection',
+            stopSelection: 'Stop',
+            resetTrim: 'Select all',
+            selectionLabel: 'Selection',
             meta: {
                 title: 'Submit a fart | Pull my finger!',
                 description: 'Send your own fart sound. It will be reviewed before joining the collection.',
@@ -73,110 +83,50 @@
         },
     }[data.lang];
 
-    // Le mimeType négocié par MediaRecorder varie selon le navigateur
-    // (webm sur Chrome/Firefox, mp4 sur Safari), on en déduit l'extension.
-    function extensionFor(mimeType) {
-        const base = (mimeType || '').split(';')[0];
-        return {
-            'audio/webm': '.webm',
-            'audio/ogg': '.ogg',
-            'audio/mp4': '.m4a',
-            'audio/mpeg': '.mp3',
-            'audio/wav': '.wav',
-        }[base] ?? '.webm';
-    }
-
-    function clearRecording() {
-        if (recordedUrl) {
-            URL.revokeObjectURL(recordedUrl);
-        }
-        recordedUrl = null;
-        recordedBlob = null;
-        recordSeconds = 0;
-    }
-
-    async function startRecording() {
-        status = null;
-        clearRecording();
-
-        let stream;
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        } catch (err) {
-            console.error(err);
-            status = 'micerror';
-            return;
-        }
-
-        chunks = [];
-        recorder = new MediaRecorder(stream);
-
-        recorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-                chunks.push(event.data);
-            }
-        };
-
-        recorder.onstop = () => {
-            // On coupe le micro dès l'arrêt, sinon l'indicateur reste allumé.
-            stream.getTracks().forEach((track) => track.stop());
-            clearInterval(timer);
-            recording = false;
-
-            const type = recorder.mimeType || 'audio/webm';
-            recordedBlob = new Blob(chunks, { type });
-            recordedUrl = URL.createObjectURL(recordedBlob);
-            chunks = [];
-
-            // Un enregistrement remplace le fichier éventuellement choisi.
-            files = null;
-            if (fileInput) {
-                fileInput.value = '';
-            }
-        };
-
-        recorder.start();
-        recording = true;
-        recordSeconds = 0;
-        timer = setInterval(() => {
-            recordSeconds += 1;
-            if (recordSeconds >= MAX_SECONDS) {
-                stopRecording();
-            }
-        }, 1000);
-    }
-
-    function stopRecording() {
-        if (recorder && recorder.state !== 'inactive') {
-            recorder.stop();
-        }
-    }
-
-    function toggleRecording() {
-        if (recording) {
-            stopRecording();
-        } else {
-            startRecording();
-        }
-    }
+    const trimmerLabels = {
+        trimTitle: t.trimTitle,
+        trimHint: t.trimHint,
+        playSelection: t.playSelection,
+        stopSelection: t.stopSelection,
+        resetTrim: t.resetTrim,
+        selectionLabel: t.selectionLabel,
+        listen: t.listen,
+    };
 
     function handleFileChange() {
         // Un fichier choisi remplace l'enregistrement.
-        if (files?.[0]) {
-            clearRecording();
-        }
+        if (files?.[0]) recorder.reset();
         status = null;
     }
 
-    async function handleSubmit(e) {
-        e.preventDefault();
+    // Un enregistrement remplace le fichier éventuellement choisi.
+    function beginRecording() {
+        files = null;
+        if (fileInput) fileInput.value = '';
+        status = null;
+        recorder.start();
+    }
+
+    function toggleRecording() {
+        if (recorder.recording) recorder.stop();
+        else beginRecording();
+    }
+
+    // Jette l'enregistrement et revient à l'état initial (choix de fichier).
+    function discardRecording() {
+        recorder.reset();
+        status = null;
+    }
+
+    async function handleSubmit(event) {
+        event.preventDefault();
         status = null;
 
-        if (recording) {
-            return;
-        }
+        if (recorder.recording) return;
 
-        const file = files?.[0] ?? recordedBlob;
+        // Un fichier choisi a la priorité ; sinon on envoie l'enregistrement,
+        // rogné en WAV par le composant.
+        const file = files?.[0] ?? trimmer?.getBlob() ?? recorder.blob;
         if (!file) {
             status = 'nofile';
             return;
@@ -190,21 +140,14 @@
 
         uploading = true;
         try {
-            let ext;
-            if (file.name) {
-                const dot = file.name.lastIndexOf('.');
-                ext = dot > 0 ? file.name.slice(dot) : '';
-            } else {
-                ext = extensionFor(file.type);
-            }
-            const name = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}${ext}`;
+            const name = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}${extensionForFile(file)}`;
             await uploadBytes(ref(storage, `moderation/${name}`), file, {
                 contentType: file.type,
             });
             status = 'success';
             files = null;
-            clearRecording();
-            e.target.reset();
+            recorder.reset();
+            event.target.reset();
         } catch (err) {
             console.error(err);
             status = 'error';
@@ -213,14 +156,7 @@
         }
     }
 
-    $effect(() => {
-        return () => {
-            clearInterval(timer);
-            if (recordedUrl) {
-                URL.revokeObjectURL(recordedUrl);
-            }
-        };
-    });
+    $effect(() => () => recorder.dispose());
 </script>
 
 <svelte:head>
@@ -242,7 +178,7 @@
             bind:files
             bind:this={fileInput}
             onchange={handleFileChange}
-            disabled={uploading || recording}
+            disabled={uploading || recorder.recording}
         />
 
         {#if supportsRecording}
@@ -251,39 +187,53 @@
             <button
                 type="button"
                 class="button-fart button-record"
-                class:is-recording={recording}
+                class:is-recording={recorder.recording}
                 onclick={toggleRecording}
                 disabled={uploading}
             >
-                <span class="icon" aria-hidden="true">{recording ? '■' : '●'}</span>
-                {recording ? t.stop : t.record}
+                <span class="icon" aria-hidden="true">{recorder.recording ? '■' : '●'}</span>
+                {recorder.recording ? t.stop : t.record}
             </button>
 
-            {#if recording}
+            {#if recorder.recording}
                 <p class="msg recording">
-                    {t.recording} {recordSeconds}s / {MAX_SECONDS}s
+                    {t.recording} {recorder.seconds}s / {MAX_SECONDS}s
                 </p>
             {/if}
 
-            {#if recordedUrl}
-                <p class="listen">{t.listen}</p>
-                <!-- svelte-ignore a11y_media_has_caption -->
-                <audio src={recordedUrl} controls></audio>
-                <button
-                    type="button"
-                    class="link-button"
-                    onclick={startRecording}
+            {#if recorder.blob}
+                <AudioTrimmer
+                    bind:this={trimmer}
+                    blob={recorder.blob}
                     disabled={uploading}
-                >
-                    {t.again}
-                </button>
+                    labels={trimmerLabels}
+                />
+
+                <div class="record-actions">
+                    <button
+                        type="button"
+                        class="link-button"
+                        onclick={beginRecording}
+                        disabled={uploading}
+                    >
+                        {t.again}
+                    </button>
+                    <button
+                        type="button"
+                        class="link-button link-danger"
+                        onclick={discardRecording}
+                        disabled={uploading}
+                    >
+                        {t.discard}
+                    </button>
+                </div>
             {/if}
         {/if}
 
         <button
             type="submit"
             class="button-fart button-submit"
-            disabled={uploading || recording}
+            disabled={uploading || recorder.recording}
         >
             {uploading ? t.uploading : t.submit}
         </button>
@@ -296,7 +246,7 @@
             <p class="msg error">{t.noFile}</p>
         {:else if status === 'notaudio'}
             <p class="msg error">{t.notAudio}</p>
-        {:else if status === 'micerror'}
+        {:else if recorder.error === 'mic'}
             <p class="msg error">{t.micError}</p>
         {/if}
     </form>
@@ -428,36 +378,18 @@
         margin: 0;
     }
 
-    .listen {
-        font-family: Helvetica, sans-serif;
-        color: #555;
-        margin: 4px 0 0;
-    }
-
-    audio {
-        width: 100%;
-    }
-
-    .link-button {
-        align-self: flex-start;
-        appearance: none;
-        background: none;
-        border: 0;
-        padding: 0;
-        color: #36395a;
-        cursor: pointer;
-        font-family: Helvetica, sans-serif;
-        font-size: 0.9em;
-        text-decoration: underline;
-    }
-
-    .msg.recording {
-        color: #cf222e;
+    .record-actions {
+        display: flex;
+        gap: 16px;
     }
 
     .msg {
         font-family: Helvetica, sans-serif;
         margin: 4px 0 0;
+    }
+
+    .msg.recording {
+        color: #cf222e;
     }
 
     .msg.success {

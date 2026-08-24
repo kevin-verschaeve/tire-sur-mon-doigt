@@ -302,3 +302,25 @@ a.raw {
   box-shadow: #D6D6E7 0 3px 7px inset;
   transform: translateY(2px);
 }
+
+/* Bouton en forme de lien, réutilisé par le formulaire d'envoi et le rogneur. */
+.link-button {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: #36395a;
+  cursor: pointer;
+  font-family: Helvetica, sans-serif;
+  font-size: 0.9em;
+  text-decoration: underline;
+}
+
+.link-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.link-danger {
+  color: #cf222e;
+}
