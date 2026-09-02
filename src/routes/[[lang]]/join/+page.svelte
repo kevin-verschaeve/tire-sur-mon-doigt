@@ -8,6 +8,9 @@
             label: 'Nom du salon',
             placeholder: 'ex: bureau, famille…',
             submit: 'Rejoindre',
+            activeRooms: 'Salons actifs',
+            person: 'personne',
+            people: 'personnes',
         },
         en: {
             title: 'Join a room',
@@ -15,8 +18,17 @@
             label: 'Room name',
             placeholder: 'e.g. office, family…',
             submit: 'Join',
+            activeRooms: 'Active rooms',
+            person: 'person',
+            people: 'people',
         },
     }[data.lang];
+
+    const homeHref = data.lang === 'fr' ? '/' : `/${data.lang}`;
+
+    function joinHref(room) {
+        return `${homeHref}?room=${encodeURIComponent(room)}`;
+    }
 </script>
 
 <h2>{t.title}</h2>
@@ -38,7 +50,26 @@
         </div>
         <p class="description">{@html t.description}</p>
     </form>
+
 </div>
+
+{#if data.rooms.length > 0}
+    <div class="content">
+        <div class="rooms-list">
+            <h3>{t.activeRooms}</h3>
+            <ul>
+                {#each data.rooms as { room, count } (room)}
+                    <li>
+                        <a href={joinHref(room)} class="room-link">
+                            <span class="room-name">{room}</span>
+                            <span class="room-count">{count} {count > 1 ? t.people : t.person}</span>
+                        </a>
+                    </li>
+                {/each}
+            </ul>
+        </div>
+    </div>
+{/if}
 
 
 <style>
@@ -98,6 +129,61 @@
         box-shadow: rgba(45, 35, 66, 0.15) 0 2px 6px inset;
     }
 
+
+    .rooms-list {
+        width: 100%;
+        max-width: 420px;
+    }
+
+    .rooms-list h3 {
+        font-family: Helvetica, sans-serif;
+        font-size: 0.85em;
+        font-weight: 600;
+        color: #555;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin: 0 0 10px;
+    }
+
+    .rooms-list ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .room-link {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        height: 48px;
+        padding: 0 14px;
+        font-family: "JetBrains Mono", monospace;
+        color: #36395a;
+        background: #fcfcfd;
+        border: 1.5px solid #d6d6e7;
+        border-radius: 4px;
+        box-shadow: rgba(45, 35, 66, 0.1) 0 2px 4px inset;
+        text-decoration: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .room-link:hover {
+        border-color: #36395a;
+        box-shadow: rgba(45, 35, 66, 0.15) 0 2px 6px inset;
+    }
+
+    .room-name {
+        font-weight: 600;
+    }
+
+    .room-count {
+        font-size: 0.85em;
+        color: #888;
+    }
 
     @media (max-width: 480px) {
         .input-row {
