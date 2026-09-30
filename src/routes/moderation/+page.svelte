@@ -63,6 +63,27 @@
         audio.play();
     }
 
+    async function download(sound) {
+        if (processing.has(sound.fullPath)) return;
+        processing.add(sound.fullPath);
+        try {
+            const blob = await getBlob(ref(storage, sound.fullPath));
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = sound.name;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error(err);
+            alert('Erreur lors du téléchargement du son.');
+        } finally {
+            processing.delete(sound.fullPath);
+        }
+    }
+
     async function accept(sound) {
         if (processing.has(sound.fullPath)) return;
         processing.add(sound.fullPath);
@@ -145,6 +166,7 @@
                     <span class="mod-name" title={sound.name}>{sound.name}</span>
                     <div class="mod-actions">
                         <button class="mod-btn play" onclick={() => play(sound)} disabled={processing.has(sound.fullPath)}>▶ Écouter</button>
+                        <button class="mod-btn play" onclick={() => download(sound)} disabled={processing.has(sound.fullPath)}>⬇ Télécharger</button>
                         <button class="mod-btn accept" onclick={() => accept(sound)} disabled={processing.has(sound.fullPath)}>✓ Accepter</button>
                         <button class="mod-btn reject" onclick={() => reject(sound)} disabled={processing.has(sound.fullPath)}>✕ Rejeter</button>
                     </div>
