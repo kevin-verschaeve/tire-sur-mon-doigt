@@ -167,7 +167,7 @@
                     <div class="mod-actions">
                         <button class="mod-btn play" onclick={() => play(sound)} disabled={processing.has(sound.fullPath)}>▶ Écouter</button>
                         <button class="mod-btn play" onclick={() => download(sound)} disabled={processing.has(sound.fullPath)}>⬇ Télécharger</button>
-                        <button class="mod-btn accept"onclick={() => accept(sound)} disabled={processing.has(sound.fullPath)}>✓ Accepter</button>
+                        <button class="mod-btn accept" onclick={() => accept(sound)} disabled={processing.has(sound.fullPath)}>✓ Accepter</button>
                         <button class="mod-btn reject" onclick={() => reject(sound)} disabled={processing.has(sound.fullPath)}>✕ Rejeter</button>
                     </div>
                 </div>
