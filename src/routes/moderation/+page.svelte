@@ -4,6 +4,18 @@
     import { auth, storage } from '$lib/firebase.js'
     import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth'
     import { ref, listAll, getBlob, getDownloadURL, uploadBytes, deleteObject } from 'firebase/storage'
+    import { extensionForFile } from '$lib/audio/format.js';
+    import AudioTrimmer from '$lib/components/AudioTrimmer.svelte';
+
+    const trimmerLabels = {
+        trimTitle: 'Rogne le son pour couper les blancs :',
+        trimHint: 'Fais glisser les poignées pour garder uniquement le son.',
+        playSelection: 'Écouter la sélection',
+        stopSelection: 'Arrêter',
+        resetTrim: 'Tout sélectionner',
+        selectionLabel: 'Sélection',
+        listen: 'Écoute du son :',
+    };
 
 
     let authState = $state('loading'); // 'loading' | 'anon' | 'authed'
@@ -15,6 +27,8 @@
     let sounds = $state(null); // null = chargement, [] = vide
     let audio = $state(null);
     let processing = new SvelteSet();
+    let editing = $state(null); // { fullPath, blob } du son en cours d'édition
+    let trimmer = $state(null);
 
     onMount(() => {
         audio = new Audio();
@@ -79,6 +93,45 @@
         } catch (err) {
             console.error(err);
             alert('Erreur lors du téléchargement du son.');
+        } finally {
+            processing.delete(sound.fullPath);
+        }
+    }
+
+    async function edit(sound) {
+        if (processing.has(sound.fullPath)) return;
+        processing.add(sound.fullPath);
+        try {
+            const blob = await getBlob(ref(storage, sound.fullPath));
+            editing = { fullPath: sound.fullPath, blob };
+        } catch (err) {
+            console.error(err);
+            alert('Erreur lors du chargement du son.');
+        } finally {
+            processing.delete(sound.fullPath);
+        }
+    }
+
+    function cancelEdit() {
+        editing = null;
+    }
+
+    // Envoie la version rognée (WAV) dans la collection et retire l'original.
+    async function acceptEdited(sound) {
+        if (processing.has(sound.fullPath) || !trimmer) return;
+        processing.add(sound.fullPath);
+        try {
+            const edited = trimmer.getBlob();
+            const base = sound.name.replace(/\.[^.]+$/, '');
+            await uploadBytes(ref(storage, `${base}${extensionForFile(edited)}`), edited, {
+                contentType: edited.type || 'application/octet-stream',
+            });
+            await deleteObject(ref(storage, sound.fullPath));
+            sounds = sounds.filter((s) => s.fullPath !== sound.fullPath);
+            editing = null;
+        } catch (err) {
+            console.error(err);
+            alert('Erreur lors de la validation du son modifié.');
         } finally {
             processing.delete(sound.fullPath);
         }
@@ -167,9 +220,24 @@
                     <div class="mod-actions">
                         <button class="mod-btn play" onclick={() => play(sound)} disabled={processing.has(sound.fullPath)}>▶ Écouter</button>
                         <button class="mod-btn play" onclick={() => download(sound)} disabled={processing.has(sound.fullPath)}>⬇ Télécharger</button>
+                        <button class="mod-btn play" onclick={() => edit(sound)} disabled={processing.has(sound.fullPath) || editing?.fullPath === sound.fullPath}>✎ Modifier</button>
                         <button class="mod-btn accept" onclick={() => accept(sound)} disabled={processing.has(sound.fullPath)}>✓ Accepter</button>
                         <button class="mod-btn reject" onclick={() => reject(sound)} disabled={processing.has(sound.fullPath)}>✕ Rejeter</button>
                     </div>
+                    {#if editing?.fullPath === sound.fullPath}
+                        <div class="mod-editor">
+                            <AudioTrimmer
+                                bind:this={trimmer}
+                                blob={editing.blob}
+                                disabled={processing.has(sound.fullPath)}
+                                labels={trimmerLabels}
+                            />
+                            <div class="mod-actions">
+                                <button class="mod-btn accept" onclick={() => acceptEdited(sound)} disabled={processing.has(sound.fullPath)}>✓ Accepter la version modifiée</button>
+                                <button class="mod-btn play" onclick={cancelEdit} disabled={processing.has(sound.fullPath)}>Annuler</button>
+                            </div>
+                        </div>
+                    {/if}
                 </div>
             {/each}
         {/if}
@@ -256,6 +324,13 @@
         border-radius: 6px;
         box-sizing: border-box;
         flex-wrap: wrap;
+    }
+
+    .mod-editor {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
     }
 
     .mod-name {
